@@ -1,0 +1,17 @@
+@startuml context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(patient, 'Patient')
+Person(doctor, 'Doctor')
+Person(staff, 'Staff')
+
+Enterprise_Boundary(acme_cloud, 'Acme cloud') {
+    System(appointments_system, 'Appointment Scheduling System', '')
+
+    Rel(patient, appointments_system, 'View appointment times & reserve slot')
+    Rel(doctor, appointments_system, 'View appointments and set schedule')
+    Rel(staff, appointments_system, 'Manage appointments & schedules')
+    Rel(appointments_system, patient, 'Send appointment reminder or confirmation (email or notifications)')
+}
+
+@enduml
