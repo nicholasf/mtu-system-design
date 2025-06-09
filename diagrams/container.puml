@@ -1,0 +1,61 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/master/dist
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+
+!include DEVICONS/react.puml
+
+!includeurl AWSPuml/AWSCommon.puml
+!includeurl AWSPuml/BusinessApplications/all.puml
+!includeurl AWSPuml/Compute/all.puml
+!includeurl AWSPuml/Mobile/APIGateway.puml
+!includeurl AWSPuml/General/InternetGateway.puml
+!includeurl AWSPuml/Database/all.puml
+!includeurl AWSPuml/Analytics/all.puml
+!includeurl AWSPuml/Storage/all.puml
+!includeurl AWSPuml/ApplicationIntegration/all.puml
+!includeurl AWSPuml/ManagementAndGovernance/all.puml
+
+left to right direction
+
+title Appointment Scheduling System - Container Diagram
+
+Person(patient, 'Patient')
+Person(doctor, 'Doctor')
+Person(staff, 'Staff')
+
+
+Container(spa_doctors_patients, "SPA Doctors and Patients", "React", "", react)
+Rel(patient, spa_doctors_patients, "View appointment times & reserve slot", "HTTPS")
+Rel(doctor, spa_doctors_patients, "View appointments and set schedule", "HTTPS")
+
+Container(spa_staff, "SPA Staff", "React", "", react)
+Rel(staff, spa_staff, "Manage appointments & schedules", "HTTPS")
+
+System(oidc, "Auth0 OIDC Provider", "", "", "OIDC/OAuth2")
+Rel(spa_doctors_patients, oidc, "Authenticate via OAuth2 flow")
+Rel(spa_staff, oidc, "Authenticate via OAuth2 flow")
+Rel(oidc, spa_doctors_patients, "Respond with JWT", "OAuth2")
+Rel(oidc, spa_staff, "Respond with JWT", "OAuth2")
+
+System_Boundary(acme_cloud, "ACME's AWS Cloud Account") {
+    Container(gateway, "API Gateway", "API Gateway", "GET, POST, HEAD, etc.", "APIGateway")
+    Rel(spa_doctors_patients, gateway, "HTTPS")
+    Rel(spa_staff, gateway, "HTTPS")
+
+    Container(lambda_scheduler, "Scheduling API", "Node, AWS Lambda", "RESTful service", "Lambda")
+    Rel(gateway, lambda_scheduler, "API Gateway", "HTTPS")
+
+    ContainerDb(db, "RDS Postgres", "", "AuroraPostgreSQL", "RDS")
+    Rel(lambda_scheduler, db, "Read/Write", "")
+
+    ContainerDb(redis, "Cache", "Redis", "Houses session data", "ElastiCacheForRedis")
+    Rel(lambda_scheduler, redis, "Read/Write", "")
+
+    Container(notifications, "Notifications sent by SES", "AWS SES", "Send notifications to users", "SimpleEmailService")
+    Rel(lambda_scheduler, notifications, "Send appointment reminders", "Email")
+    Rel(notifications, patient, "Send appointment confirmation", "Email")
+}
+
+@enduml

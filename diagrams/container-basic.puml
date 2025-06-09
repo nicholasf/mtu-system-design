@@ -1,0 +1,43 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/master/dist
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+
+!include DEVICONS/react.puml
+
+!includeurl AWSPuml/AWSCommon.puml
+!includeurl AWSPuml/Compute/all.puml
+!includeurl AWSPuml/Mobile/APIGateway.puml
+!includeurl AWSPuml/General/InternetGateway.puml
+!includeurl AWSPuml/Database/all.puml
+!includeurl AWSPuml/Analytics/all.puml
+!includeurl AWSPuml/Storage/all.puml
+!includeurl AWSPuml/ApplicationIntegration/all.puml
+!includeurl AWSPuml/ManagementAndGovernance/all.puml
+
+left to right direction
+
+title Basic Service Pattern - Container Diagram
+
+Person(actor, 'Actor')
+
+Container(spa, "SPA", "React", "", react)
+Rel(actor, spa, "Use", "HTTPS")
+
+System(oidc, "Auth0 OIDC Provider", "", "", "OIDC/OAuth2")
+Rel(spa, oidc, "Authenticate via OAuth2 flow")
+Rel(oidc, spa, "Respond with JWT", "OAuth2")
+
+System_Boundary(acme_cloud, "ACME's AWS Cloud Account") {
+    Container(gateway, "API Gateway", "API Gateway", "GET, POST, HEAD, etc.", "APIGateway")
+    Rel(spa, gateway, "HTTPS")
+
+    Container(lambda, "Lambda handler", "Node, AWS Lambda", "", "Lambda")
+    Rel(gateway, lambda, "API Gateway", "HTTPS")
+
+    ContainerDb(db, "RDS Postgres", "", "AuroraPostgreSQL", "RDS")
+    Rel(lambda, db, "Read/Write", "")
+}
+
+@enduml

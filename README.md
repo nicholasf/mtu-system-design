@@ -2,13 +2,13 @@
 
 Please see the [Scheduling System](./scheduling-system.pdf)
 
-## Introduction to My Approach: ADRs and C4 Model
+## Background
 
-My approach to this design challenge is to follow an [ADR like process](https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions) and to use the [C4 Model](https://c4model.com/) for most things.
+Initially I did a sort of lightweight [ADR](https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions) for this design, but it became a bit lengthy. I have worked to keep it simple. 
 
-ADRs are usually used when a decision must be made and are generally framed around the presentation of options that might be chosen, nominating one. ADRs can, however, also document a single option. We'll see what I end up with.
-
-For C4, I generally only use [context](https://c4model.com/diagrams/system-context) and [container](https://c4model.com/diagrams/container) diagrams, though I have used [component](https://c4model.com/diagrams/component) diagrams previously. I will otherwise use sequence or [dynamic](https://c4model.com/diagrams/dynamic) diagrams as needed. C4 diagrams are written in PlantUML (.puml extension) and rendered via it. Mermaid will also let you render C4 diagrams now but the diagram quality is still lower (criss crossing lines, etc.)
+I have used PlantUML to create the C4 [container](https://c4model.com/diagrams/container). There is a [VSC Plugin for PlantUML](https://marketplace.visualstudio.com/items?itemName=jebbs.plantuml) that can render my [diagram](./diagrams/container.puml). There are two older diagrams in the directory, one a context and the other a general pattern for a lambda service on AWS. I left them out of the document, finally, to opt for brevity.
 
 All diagrams will be in the `/diagrams` folder. The top level [System Design](./design.md) document will hold the entire solution.
+
+You will find a PDF that holds the rendered design document [here](./design.pdf).
 
