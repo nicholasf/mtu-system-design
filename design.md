@@ -1,4 +1,4 @@
-# Scheduling System API using Skip Update Locks with PostgresSQL DB.
+# Scheduling System API using Skip Update Locks with PostgreSQL DB.
 
 Here is my design for the Appointment Scheduling System, it is a [C4 Container](https://c4model.com/diagrams/container) written and rendered using PlantUML. I have divided its explanation in a few sections beneath the diagram. 
 
@@ -6,9 +6,9 @@ Here is my design for the Appointment Scheduling System, it is a [C4 Container](
 
 You will see that the three system actors - Doctors, Patients and Staff - each interact with React Single Page Applications. I have assigned a separate frontend for Staff to satisfy the 7th requirement of the document ("The system should provide an admin interface for clinic staff ...") although this is being very literal and I would clarify this if I had access to the requirements maker, to see if the design could simply use one frontend. A single SPA is otherwise shared by Doctors and Patients. 
 
-Doctors, Patients and Staff are all recognised by OAuth2, their roles being expressed in a fields within a JWT body, after authenticating via OIDC using AuthX (see below in [security](#security)).
+Doctors, Patients and Staff are all recognised by OAuth2, their roles being expressed in a field within the JWT body, after authenticating via OIDC using Auth0 (see below in [security](#security)).
 
-Of the 7 requirements The system design challenge lists, two are [non-functional](https://en.wikipedia.org/wiki/Non-functional_requirement), the rest are functional. Reqirements 4 and 5 in the document are non-functional and relate to scalability, low latency, fault tolerance and recoverability. For this I am leaning upon AWS and choosing cloud native solutions.
+Of the 7 requirements that the system design challenge lists, two are [non-functional](https://en.wikipedia.org/wiki/Non-functional_requirement), the rest are functional. Reqirements 4 and 5 in the document are non-functional and relate to scalability, low latency, fault tolerance and recoverability. For this I am leaning upon AWS and choosing cloud native solutions.
 
 ## AWS Pieces
 
@@ -24,7 +24,9 @@ Latency will be the cost of time for the roundtrip between the SPA, the Lambda, 
 
 RDS can be deployed as [Multi AZ](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.MultiAZSingleStandby.html). This is the simplest way to ensure that there is failover at at the database level.
 
-When discussing failover the usual strategy is to ensure that the application can be deployed in different geographical locations, in case a given data centre experiences downtime. Patterns such as "active-active" and "active-passive" can be employed, each with a financial cost. The requirement doesn't state how much downtime is permissable. Given this, I would assume that the simplest option of relying on Multi AZ for fault tolerance would be a reasonable starting point, with more advanced failover patterns to be considered if deemed necessary after clarification with the requirements maker.
+When discussing failover the usual strategy is to ensure that the application can be deployed in different geographical locations, in case a given data centre experiences downtime. Patterns such as "active-active" and "active-passive" can be employed, each with a financial cost. The requirement doesn't state how much downtime is permissable. Given this, I would assume that the simplest option of relying on Multi AZ for fault tolerance would be a reasonable starting point, as data won't be lost if PostgreSQL writes to a read replica in another AZ. More advanced failover patterns could be considered if deemed necessary after clarification with the requirements maker.
+
+In addition, Redis is also available in [Multi AZ](https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/multi-az.html), although the data in the Redis instance will be ephemeral and session based and less problematic if lost.
 
 ## Security
 
@@ -43,7 +45,7 @@ This backend must have a data model and strategies for
 5. when an appointment is changed there needs to be a decision about what should happen to the previous slot, it would normally be freed
 6. when a slot is changed there needs to be an automatic reassigment of the appointment to another slot, see Point 9 - if some slots become free within the 24 hour freeze period then Staff will probably have to curate them manually
 7. whenever an appointment is assigned to a slot, there should be a notification event sent to the Notification System that means the Patient is notified. Ideally, there might be a sensible delay on notifications being sent out, so deduplication can occur and Patients are not spammed with notifications if an appointment is changed many times in a short duration. 
-8. consideration could be given to protection from abuse - i.e. how many times can a Patient change their appointment and thus trigger a cycle from e to g above?
+8. consideration could be given to protection from abuse - i.e. how many times can a Patient change their appointment and thus trigger a cycle from 5 to 7 above?
 9. there should be a lock on an appointment for n hours (normally 24) that means the Patient can longer change the time slot.
 10. Staff configuring public holidays when the schedule cannot operate
 
