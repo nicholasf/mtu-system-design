@@ -34,6 +34,8 @@ An OIDC Provider (OpenID Connect) will need to be configured to *authenticate* u
 
 For this solution I am nominating Auth0's [Authorization Code Flow With Proof Key for Code Exchange (PKCE)](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-pkce) which is designed to be used for SPA's interacting with backends. This OAuth flow this will result in an access token being handed to the SPA, which it will then communicate to the backend API via the HTTP Header key value pair: `Authorization: Bearer <token>`. The backend will then need to validate and verify the token with Auth0's API. Once this is done, the backend will have authorized the SPA's data and one of several strategies can be used to avoid reauthorising with each HTTP request and response - the backend, could, for example, set a [secure cookie](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/Cookies). Here, I have nominated that the cookie can be stored in Redis with a reasonable Time To Live that suits the purpose of the session, say half an hour.
 
+This approach also gives all system actors the advantage of [SSO on Auth0](https://auth0.com/docs/authenticate/login/oidc-conformant-authentication/oidc-adoption-sso). 
+
 ## Aspects of Business Logic 
 
 This backend must have a data model and strategies for 
